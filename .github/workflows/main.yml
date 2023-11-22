@@ -1,0 +1,32 @@
+name: Build and Run Docker Image
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        id: docker-buildx-setup
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build Docker image
+        id: docker-build
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: Dockerfile
+          push: false
+          tags: ${{ steps.docker-build.outputs.image.digest }}
+
+      - name: Run Docker container
+        uses: docker/run-action@v3
+        with:
+          image: ${{ steps.docker-build.outputs.image.digest }}
+          command: ["cat", "/name-app/my-name.txt"]
